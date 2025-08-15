@@ -2,10 +2,58 @@
     <string name="app_name">connect-tex</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+    
+    <!-- Login Page Strings -->
+    <string name="login_title">ConnectTex</string>
+    <string name="login_subtitle">Welcome back! Please sign in to continue.</string>
+    <string name="login_email_hint">Email</string>
+    <string name="login_password_hint">Password</string>
+    <string name="login_button">Login</string>
+    <string name="login_logging_in">Logging in...</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="sign_up_text">Don\'t have an account? Sign up</string>
+    <string name="login_success">Login successful!</string>
+    <string name="login_failed">Invalid credentials</string>
+    <string name="email_required">Email is required</string>
+    <string name="email_invalid">Please enter a valid email</string>
+    <string name="password_required">Password is required</string>
+    <string name="password_too_short">Password must be at least 6 characters</string>
+    
+    <!-- Home Screen Strings -->
+    <string name="home_welcome_message">Welcome to ConnectTex!</string>
+    <string name="home_subtitle">You have successfully logged in.</string>
+    
+    <!-- Forgot Password Strings -->
+    <string name="forgot_password_title">Forgot Password</string>
+    <string name="forgot_password_header">Reset Your Password</string>
+    <string name="forgot_password_description">Enter your email address and we\'ll send you a link to reset your password.</string>
+    <string name="enter_email_for_reset">Enter your email address</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="sending_reset_link">Sending...</string>
+    <string name="reset_link_sent">Password reset link has been sent to your email!</string>
+    <string name="check_email_after_reset">Please check your email and follow the instructions to reset your password.</string>
+    
+    <!-- Register Strings -->
+    <string name="register_title">Create Account</string>
+    <string name="register_header">Join ConnectTex</string>
+    <string name="register_description">Create your account to get started</string>
+    <string name="full_name_hint">Full Name</string>
+    <string name="phone_hint">Phone Number (Optional)</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="register_button">Create Account</string>
+    <string name="creating_account">Creating Account...</string>
+    <string name="registration_success">Account created successfully!</string>
+    <string name="full_name_required">Full name is required</string>
+    <string name="full_name_too_short">Full name must be at least 2 characters</string>
+    <string name="confirm_password_required">Please confirm your password</string>
+    <string name="passwords_not_match">Passwords do not match</string>
+    <string name="phone_invalid">Please enter a valid phone number</string>
+    <string name="accept_terms_text">I agree to the Terms and Conditions and Privacy Policy</string>
+    <string name="accept_terms_required">Please accept the terms and conditions</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="login_here">Login here</string>
 
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
