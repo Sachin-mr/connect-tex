@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- Example suppressions - adjust based on your needs -->
+    
+    <!-- Suppress false positives for Android SDK -->
+    <suppress>
+        <notes><![CDATA[
+            This suppresses false positives for Android SDK components
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.android.*$</packageUrl>
+        <cve>CVE-2020-0000</cve>
+    </suppress>
+    
+    <!-- Suppress specific CVEs that don't affect your project -->
+    <suppress>
+        <notes><![CDATA[
+            This CVE does not affect our usage pattern
+        ]]></notes>
+        <cve>CVE-2021-0000</cve>
+    </suppress>
+</suppressions>

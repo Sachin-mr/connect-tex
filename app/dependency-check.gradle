@@ -1,0 +1,17 @@
+dependencyCheck {
+    analyzers {
+        assemblyEnabled = false
+        nuspecEnabled = false
+        nugetconfEnabled = false
+    }
+    
+    format = 'ALL'
+    suppressionFile = 'dependency-check-suppressions.xml'
+    
+    failBuildOnCVSS = 7.0
+    
+    cve {
+        urlModified = 'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-modified.json.gz'
+        urlBase = 'https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-%d.json.gz'
+    }
+}
