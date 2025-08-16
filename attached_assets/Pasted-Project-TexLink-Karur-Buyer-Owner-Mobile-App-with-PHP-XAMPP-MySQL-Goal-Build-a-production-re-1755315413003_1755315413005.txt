@@ -1,0 +1,279 @@
+Project: TexLink Karur — Buyer↔Owner Mobile App with PHP (XAMPP) + MySQL
+Goal: Build a production-ready mobile app for textile buyers to calculate costs, request quotes, and place orders; and for textile owners to publish availability, respond (accept/reject/counter), and chat with buyers. Include full backend (PHP/Laravel preferred) with REST APIs, JWT auth, and a complete MySQL schema + seed data exportable to XAMPP (phpMyAdmin).
+
+1) Tech Stack & Output
+
+Mobile: Flutter (stable) or React Native (your pick). UX modern, clean, responsive.
+
+Backend: PHP Laravel 10 (preferred) running on XAMPP (Apache + PHP + MySQL).
+
+DB: MySQL 8. Deliver a file named database.sql containing DDL + constraints + indexes + sample seed rows.
+
+Auth: Email+password with JWT; roles = buyer, owner, admin.
+
+Chat: Simple 1-to-1 buyer↔owner chat via REST (conversation + messages).
+
+Packaging: Provide:
+
+Backend source with composer.json, .env.example, migrations, seeders, and also a single database.sql export.
+
+Mobile source with clear folder structure and .env or config for API base URL.
+
+README files for both projects with setup steps for XAMPP + mobile run instructions.
+
+2) Core Features (MVP)
+
+Buyer
+
+Register/Login (role=buyer), profile (company, location).
+
+Cost Calculator: inputs → product type, fabric (cotton/linen/polyblend), GSM, size (L×W), color/print method, stitching complexity (basic/overlock/piped), quantity, packaging, shipping incoterm (EXW/FOB/CIF), lead time.
+
+Derived costs: material, labor, printing, overhead, margin %, tax %, freight (if CIF). Show unit cost + total.
+
+Save as RFQ; send to selected owners or broadcast to eligible owners (by category & capacity).
+
+View owner quotes/counteroffers, compare, accept → converts to Order.
+
+Chat with owner per RFQ/Order.
+
+Order tracking statuses: rfq_created → quoted → buyer_review → order_confirmed → in_production → ready_to_dispatch → completed/cancelled.
+
+Textile Owner
+
+Register/Login (role=owner); profile (factory name, capacity/day, categories, MOQ, lead-time ranges, certifications).
+
+Availability: post capacity windows (date range, daily capacity, status: available/busy).
+
+Receive RFQs; Respond with quote (price, min qty, lead time) or Counter; or Reject with reason.
+
+Convert accepted quote into Order, update status, expected dates, and upload documents (PI, packing list).
+
+Chat with buyer.
+
+Admin (simple)
+
+View users, RFQs, orders; block/approve owners; view reports.
+
+3) Database Design — Generate as database.sql
+
+Create normalized tables with proper types, foreign keys, cascading rules, composite indexes, and CHECK constraints where useful. Include at least 25+ sample rows across tables for testing.
+
+Tables (minimum):
+
+users (id, role ENUM('buyer','owner','admin'), name, email UNIQUE, phone, password_hash, company_name, location_city, location_state, created_at, updated_at, is_active)
+
+owners_profile (id PK/FK=users.id, factory_name, capacity_per_day INT, default_lead_time_days INT, moq INT, certifications JSON, rating_avg DECIMAL(3,2), rating_count INT)
+
+product_categories (id, name UNIQUE, description)
+
+products (id, owner_id FK users.id, category_id FK, name, fabric ENUM('cotton','linen','polyblend','other'), gsm INT, base_size_l_cm INT, base_size_w_cm INT, base_price DECIMAL(10,2), description, is_active, created_at, updated_at)
+
+availability_slots (id, owner_id, start_date, end_date, daily_capacity INT, status ENUM('available','busy'))
+
+rfqs (id, buyer_id, target_type ENUM('broadcast','direct'), target_owner_id NULLABLE, status ENUM('open','closed','cancelled'), created_at, updated_at)
+
+rfq_items (id, rfq_id, product_category_id, fabric, gsm INT, size_l_cm INT, size_w_cm INT, colorway VARCHAR, print_method ENUM('none','screen','digital','embroidery'), stitching ENUM('basic','overlock','piped'), quantity INT, packaging ENUM('bulk','individual'), incoterm ENUM('EXW','FOB','CIF'), required_by_date DATE, notes TEXT)
+
+quotes (id, rfq_id, owner_id, quote_status ENUM('sent','countered','withdrawn','accepted','rejected','expired'), unit_price DECIMAL(10,2), total_price DECIMAL(12,2), lead_time_days INT, moq INT, valid_till DATE, message TEXT, created_at, updated_at)
+
+orders (id, rfq_id, buyer_id, owner_id, order_status ENUM('confirmed','in_production','ready_to_dispatch','completed','cancelled'), unit_price DECIMAL(10,2), quantity INT, total_price DECIMAL(12,2), expected_ship_date DATE, created_at, updated_at)
+
+order_items (id, order_id, description, size_l_cm INT, size_w_cm INT, fabric, gsm INT, print_method, stitching, quantity INT)
+
+documents (id, owner_id, order_id NULLABLE, type ENUM('PI','packing_list','invoice','coo','other'), file_path VARCHAR, uploaded_at)
+
+conversations (id, rfq_id NULLABLE, order_id NULLABLE, buyer_id, owner_id, created_at) -- unique(buyer_id, owner_id, rfq_id, order_id)
+
+messages (id, conversation_id, sender_id, body TEXT, is_read BOOL, created_at, INDEX on (conversation_id, created_at))
+
+ratings (id, rater_id, ratee_owner_id, order_id, stars TINYINT CHECK 1–5, comment, created_at, UNIQUE (rater_id, ratee_owner_id, order_id))
+
+notifications (id, user_id, type, payload JSON, is_read BOOL, created_at)
+
+audit_logs (id, user_id, action, entity_type, entity_id, meta JSON, created_at)
+
+Indices & Constraints:
+
+Add foreign keys with ON DELETE CASCADE where appropriate (e.g., messages → conversations).
+
+Create compound indexes for frequent queries:
+
+quotes(rfq_id, owner_id, quote_status)
+
+orders(owner_id, order_status, expected_ship_date)
+
+availability_slots(owner_id, start_date, end_date)
+
+Add CHECKs for enums or use ENUM types as specified.
+
+Seed Data:
+
+At least 5 buyers, 5 owners with varied capacity/MOQ, 6 categories (bedsheet, table linen, cushion cover, tote bag, apron, curtains).
+
+10 RFQs (mix of broadcast/direct), 20 quotes (some accepted, some countered), 5 orders in different statuses.
+
+A few conversations/messages linked to RFQs and Orders.
+
+4) Backend API (Laravel) — Implement & Document
+
+Auth
+
+POST /api/auth/register (role, name, email, phone, password)
+
+POST /api/auth/login → returns JWT + role
+
+GET /api/auth/me
+
+Buyer
+
+POST /api/cost/calculate → inputs from RFQ item; returns breakdown {material, labor, print, stitching, overhead, margin, tax, freight, unit_total, grand_total}
+
+POST /api/rfqs (create RFQ + items)
+
+GET /api/rfqs?mine=true (list)
+
+GET /api/rfqs/{id}
+
+GET /api/rfqs/{id}/quotes (compare)
+
+POST /api/quotes/{id}/accept → creates orders
+
+Owner
+
+GET /api/rfqs/eligible (filter by category, capacity, moq, availability window)
+
+POST /api/quotes (rfq_id, unit_price, total_price, lead_time_days, moq, message)
+
+POST /api/quotes/{id}/counter
+
+POST /api/quotes/{id}/withdraw
+
+POST /api/availability (create slots)
+
+GET /api/orders?mine=true
+
+PATCH /api/orders/{id}/status
+
+POST /api/orders/{id}/documents (multipart upload; save to /storage/app/public/orders/... and record in documents)
+
+Chat
+
+POST /api/conversations (buyer_id, owner_id, rfq_id or order_id)
+
+GET /api/conversations (by current user)
+
+GET /api/conversations/{id}/messages (paginated)
+
+POST /api/conversations/{id}/messages (body)
+
+Mark read endpoint.
+
+Ratings
+
+POST /api/ratings (order_id, ratee_owner_id, stars, comment)
+
+GET /api/owners/{id}/ratings
+
+Validation & Security
+
+Validate enums, numeric ranges (e.g., GSM 60–400), positive quantities, lead time > 0.
+
+Authorize by role and ownership (e.g., only RFQ owner can accept quotes).
+
+Sanitize uploads; limit file types; max 5 MB.
+
+Responses
+
+Use consistent JSON: {success, data, error} with HTTP codes.
+
+5) Cost Calculator — Logic to Implement
+
+For each RFQ item:
+
+Material Cost = fabric_rate_per_kg × (GSM × area_m2 per unit × 1.03 wastage).
+
+Printing/Embroidery = method-based rate × area or stitch complexity factor.
+
+Stitching/Labor = base_rate × complexity multiplier (basic=1.0, overlock=1.2, piped=1.35).
+
+Overhead = 8–12% of (material + labor + print).
+
+Margin = configurable % (default 12%).
+
+Tax = GST % (e.g., 5% or as config).
+
+Freight (if CIF) = table lookup by weight/volume + destination (mock config table).
+Return unit_total and grand_total. Make rates configurable in an app_config table or JSON.
+
+6) Mobile App — Screens & Flows
+
+Common: Splash → Login/Register → Role-based home.
+Buyer Home: Cost Calculator → Create RFQ → RFQ List → Quotes Compare → Chat → Orders → Order Detail.
+Owner Home: Availability → Eligible RFQs → Send Quote/Counter → My Orders → Update Status → Upload Docs → Chat.
+UI: Card-based lists, filters, sort by price/lead-time/rating, empty states, toasts/snackbars, pull-to-refresh.
+State: Use Provider/Bloc (Flutter) or Redux (RN). Persist auth token securely.
+
+7) Setup Instructions (WRITE IN README)
+
+Backend (XAMPP):
+
+Clone repo into htdocs/texlink-api.
+
+Copy .env.example to .env, set DB_HOST=127.0.0.1, DB_PORT=3306, DB_DATABASE=texlink, DB_USERNAME=root, DB_PASSWORD= (default XAMPP).
+
+Provide two options:
+
+php artisan migrate --seed
+
+Import database.sql via phpMyAdmin.
+
+php artisan storage:link, then php artisan serve (or configure Apache vhost).
+
+Mobile:
+
+Set API base URL (e.g., http://127.0.0.1:8000/api or LAN IP).
+
+Run on emulator/device.
+
+8) Testing & Demo Data
+
+Include a Postman collection for all endpoints (auth with pre-request script to inject JWT).
+
+Seed two demo accounts:
+
+Buyer: buyer1@example.com / Pass@12345
+
+Owner: owner1@example.com / Pass@12345
+
+Add RFQs, quotes, orders, conversations to showcase end-to-end flow.
+
+9) Quality, Security, and Docs
+
+Input validation with descriptive errors.
+
+Use Policies/Middleware for role checks.
+
+Hash passwords with bcrypt/argon2.
+
+Sanitize file uploads; generate unique filenames; store public URL.
+
+Add pagination to list endpoints; order by created_at DESC.
+
+Provide ERD diagram (PNG) and API swagger/openapi.json.
+
+Deliverables Recap:
+
+Mobile app source.
+
+Laravel API source.
+
+database.sql (DDL + FK + indexes + seed data).
+
+README with XAMPP setup, run steps, and environment configs.
+
+Postman collection + ERD image + OpenAPI spec.
+
+Brief notes on how to extend to Worker module later.
+
+Now generate the full solution with code, SQL, and documentation as specified
